@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "SafeTravel"
+version = "1.0.0"
+id = "artifacts/safe-travel"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19555
+
+[services.development]
+run = "pnpm --filter @workspace/safe-travel run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/safe-travel", "run", "build" ]
+publicDir = "artifacts/safe-travel/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19555"
+BASE_PATH = "/"

@@ -1,22 +1,31 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: SafeTravel API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: guides
+    description: Guide companies and individual guides
+  - name: places
+    description: Places (restaurants, hotels, attractions)
+  - name: ratings
+    description: User ratings for places
+  - name: sos
+    description: SOS emergency features
+  - name: suggestions
+    description: AI travel preference suggestions
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +33,620 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /guides:
+    get:
+      operationId: listGuides
+      tags: [guides]
+      summary: List guide companies with optional filters
+      parameters:
+        - name: gender
+          in: query
+          schema:
+            type: string
+            enum: [male, female, any]
+        - name: min_rating
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: negotiable
+          in: query
+          schema:
+            type: boolean
+        - name: language
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of guides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Guide"
+    post:
+      operationId: createGuide
+      tags: [guides]
+      summary: Create a new guide
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuideInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guide"
+
+  /guides/{id}:
+    get:
+      operationId: getGuide
+      tags: [guides]
+      summary: Get a guide by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Guide"
+        "404":
+          description: Not found
+
+  /places:
+    get:
+      operationId: listPlaces
+      tags: [places]
+      summary: List places with optional filters
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [restaurant, hotel, attraction, hospital, police, all]
+        - name: min_rating
+          in: query
+          schema:
+            type: number
+        - name: lat
+          in: query
+          schema:
+            type: number
+        - name: lng
+          in: query
+          schema:
+            type: number
+        - name: radius_km
+          in: query
+          schema:
+            type: number
+        - name: main_road_only
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Place"
+    post:
+      operationId: createPlace
+      tags: [places]
+      summary: Create a new place
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+
+  /places/top-rated:
+    get:
+      operationId: getTopRatedPlaces
+      tags: [places]
+      summary: Get top rated places by category
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [restaurant, hotel, attraction, all]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Top rated places
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Place"
+
+  /places/safe-spots:
+    get:
+      operationId: getSafeSpots
+      tags: [sos]
+      summary: Get nearby safe places (hospitals, police stations) for SOS
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: radius_km
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Nearby safe spots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Place"
+
+  /places/{id}:
+    get:
+      operationId: getPlace
+      tags: [places]
+      summary: Get a place by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Place
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Place"
+        "404":
+          description: Not found
+
+  /places/{id}/rate:
+    post:
+      operationId: ratePlace
+      tags: [ratings]
+      summary: Submit a rating for a place
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RatingInput"
+      responses:
+        "201":
+          description: Rating submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Rating"
+
+  /places/{id}/ratings:
+    get:
+      operationId: getPlaceRatings
+      tags: [ratings]
+      summary: Get ratings for a place
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Ratings list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Rating"
+
+  /sos/alert:
+    post:
+      operationId: triggerSosAlert
+      tags: [sos]
+      summary: Trigger an SOS alert with coordinates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosAlertInput"
+      responses:
+        "201":
+          description: SOS alert created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosAlert"
+
+  /sos/contacts:
+    get:
+      operationId: listSosContacts
+      tags: [sos]
+      summary: Get saved emergency contacts
+      responses:
+        "200":
+          description: Emergency contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SosContact"
+    post:
+      operationId: createSosContact
+      tags: [sos]
+      summary: Add an emergency contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosContactInput"
+      responses:
+        "201":
+          description: Contact added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosContact"
+
+  /sos/contacts/{id}:
+    delete:
+      operationId: deleteSosContact
+      tags: [sos]
+      summary: Delete an emergency contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /suggestions:
+    post:
+      operationId: getTravelSuggestions
+      tags: [suggestions]
+      summary: Get personalized travel suggestions based on mood, energy, budget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TravelPreferenceInput"
+      responses:
+        "200":
+          description: Personalized suggestions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TravelSuggestions"
+
+  /stats:
+    get:
+      operationId: getDashboardStats
+      tags: [places]
+      summary: Get overall app stats
+      responses:
+        "200":
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    Guide:
+      type: object
+      required: [id, name, gender, rating, price_per_day, price_negotiable, languages, specialty, verified, experience_years, company_name, rating_count]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        company_name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female]
+        rating:
+          type: number
+        rating_count:
+          type: integer
+        price_per_day:
+          type: number
+        price_negotiable:
+          type: boolean
+        languages:
+          type: array
+          items:
+            type: string
+        specialty:
+          type: string
+        verified:
+          type: boolean
+        experience_years:
+          type: integer
+        photo_url:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+
+    GuideInput:
+      type: object
+      required: [name, gender, price_per_day, languages, specialty, experience_years, company_name]
+      properties:
+        name:
+          type: string
+        company_name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female]
+        price_per_day:
+          type: number
+        price_negotiable:
+          type: boolean
+        languages:
+          type: array
+          items:
+            type: string
+        specialty:
+          type: string
+        experience_years:
+          type: integer
+        photo_url:
+          type: string
+        bio:
+          type: string
+
+    Place:
+      type: object
+      required: [id, name, type, rating, rating_count, address, lat, lng, is_main_road_accessible, price_level]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          type: string
+          enum: [restaurant, hotel, attraction, hospital, police]
+        rating:
+          type: number
+        rating_count:
+          type: integer
+        address:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        is_main_road_accessible:
+          type: boolean
+        price_level:
+          type: integer
+          description: "1=budget, 2=moderate, 3=expensive"
+        photo_url:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        distance_km:
+          type: ["number", "null"]
+
+    PlaceInput:
+      type: object
+      required: [name, type, address, lat, lng, price_level]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [restaurant, hotel, attraction, hospital, police]
+        address:
+          type: string
+        lat:
+          type: number
+        lng:
+          type: number
+        is_main_road_accessible:
+          type: boolean
+        price_level:
+          type: integer
+        photo_url:
+          type: string
+        description:
+          type: string
+        phone:
+          type: string
+
+    Rating:
+      type: object
+      required: [id, place_id, user_name, rating, created_at]
+      properties:
+        id:
+          type: integer
+        place_id:
+          type: integer
+        user_name:
+          type: string
+        rating:
+          type: number
+        review:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    RatingInput:
+      type: object
+      required: [user_name, rating]
+      properties:
+        user_name:
+          type: string
+        rating:
+          type: number
+        review:
+          type: string
+
+    SosAlert:
+      type: object
+      required: [id, lat, lng, created_at, contacts_notified]
+      properties:
+        id:
+          type: integer
+        lat:
+          type: number
+        lng:
+          type: number
+        message:
+          type: ["string", "null"]
+        contacts_notified:
+          type: integer
+        created_at:
+          type: string
+
+    SosAlertInput:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat:
+          type: number
+        lng:
+          type: number
+        message:
+          type: string
+
+    SosContact:
+      type: object
+      required: [id, name, phone, created_at]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        created_at:
+          type: string
+
+    SosContactInput:
+      type: object
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+
+    TravelPreferenceInput:
+      type: object
+      required: [mood, energy_level, budget, lat, lng]
+      properties:
+        mood:
+          type: string
+          enum: [adventurous, relaxed, cultural, foodie, social, spiritual]
+        energy_level:
+          type: string
+          enum: [low, medium, high]
+        budget:
+          type: string
+          enum: [budget, moderate, luxury]
+        lat:
+          type: number
+        lng:
+          type: number
+
+    TravelSuggestions:
+      type: object
+      required: [places, guides, message]
+      properties:
+        places:
+          type: array
+          items:
+            $ref: "#/components/schemas/Place"
+        guides:
+          type: array
+          items:
+            $ref: "#/components/schemas/Guide"
+        message:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [total_places, total_guides, total_ratings, avg_rating, top_category]
+      properties:
+        total_places:
+          type: integer
+        total_guides:
+          type: integer
+        total_ratings:
+          type: integer
+        avg_rating:
+          type: number
+        top_category:
+          type: string

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, placesTable } from "@workspace/db";
-import { eq, and, gte, sql } from "drizzle-orm";
+import { eq, and, gte, inArray, sql } from "drizzle-orm";
 import {
   ListPlacesQueryParams,
   CreatePlaceBody,
@@ -58,11 +58,11 @@ router.get("/safe-spots", async (req, res) => {
   }
   const { lat, lng, radius_km = 10 } = parsed.data;
 
-  const safeTypes = ["hospital", "police"];
+  const safeTypes = ["hospital", "police"] as const;
   const allSafe = await db
     .select()
     .from(placesTable)
-    .where(sql`${placesTable.type} = ANY(${safeTypes})`);
+    .where(inArray(placesTable.type, [...safeTypes]));
 
   const nearby = allSafe
     .map((p) => ({ ...p, distance_km: haversineKm(lat, lng, p.lat, p.lng) }))

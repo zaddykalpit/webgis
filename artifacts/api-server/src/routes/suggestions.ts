@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, placesTable, guidesTable } from "@workspace/db";
-import { eq, and, gte, sql } from "drizzle-orm";
+import { eq, and, gte, inArray, sql } from "drizzle-orm";
 import { GetTravelSuggestionsBody } from "@workspace/api-zod";
 
 const router = Router();
@@ -53,9 +53,9 @@ router.post("/", async (req, res) => {
     .from(placesTable)
     .where(
       and(
-        sql`${placesTable.type} = ANY(${placeTypes})`,
+        inArray(placesTable.type, placeTypes),
         gte(placesTable.rating, minRating),
-        sql`${placesTable.price_level} = ANY(${priceLevels})`,
+        inArray(placesTable.price_level, priceLevels),
         eq(placesTable.is_main_road_accessible, true)
       )
     )

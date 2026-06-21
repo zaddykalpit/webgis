@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useParams, Link } from "wouter";
 import { MapPin, Navigation, Star, Phone, ShieldCheck, ChevronLeft } from "lucide-react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { JourneyMap } from "@/components/journey-map";
 import { 
   useGetPlace, 
   useGetPlaceRatings, 
   useRatePlace,
-  getGetPlaceRatingsQueryKey
+  getGetPlaceRatingsQueryKey,
+  getGetPlaceQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -60,6 +61,7 @@ export default function PlaceDetail() {
         });
         setReviewForm({ user_name: "", rating: 5, review: "" });
         queryClient.invalidateQueries({ queryKey: getGetPlaceRatingsQueryKey(placeId) });
+        queryClient.invalidateQueries({ queryKey: getGetPlaceQueryKey(placeId) });
       },
       onError: () => {
         toast({
@@ -149,8 +151,8 @@ export default function PlaceDetail() {
           </div>
 
           {/* Details */}
-          <div className="mb-12 prose prose-sm md:prose-base dark:prose-invert max-w-none">
-            <h2 className="text-2xl font-bold mb-4">About this place</h2>
+          <div className="mb-10">
+            <h2 className="text-2xl font-bold mb-3">About this place</h2>
             <p className="text-muted-foreground leading-relaxed">
               {place.description || "No description available for this place."}
             </p>
@@ -162,25 +164,13 @@ export default function PlaceDetail() {
             )}
           </div>
 
-          {/* Map (Read only) */}
+          {/* Journey Map */}
           <div className="mb-12">
-            <h2 className="text-2xl font-bold mb-4">Location</h2>
-            <div className="h-64 md:h-80 w-full rounded-xl overflow-hidden border bg-muted z-0 relative">
-              <MapContainer 
-                center={[place.lat, place.lng]} 
-                zoom={15} 
-                scrollWheelZoom={false} 
-                className="h-full w-full"
-                attributionControl={false}
-              >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                />
-                <Marker position={[place.lat, place.lng]}>
-                  <Popup>{place.name}</Popup>
-                </Marker>
-              </MapContainer>
-            </div>
+            <h2 className="text-2xl font-bold mb-2">Navigate to {place.name}</h2>
+            <p className="text-muted-foreground text-sm mb-5">
+              Press "Start Journey" to see your live location, distance, and estimated travel time to this destination.
+            </p>
+            <JourneyMap destination={{ lat: place.lat, lng: place.lng, name: place.name }} />
           </div>
 
           {/* Reviews List */}
@@ -200,7 +190,7 @@ export default function PlaceDetail() {
                         <div className="font-bold">{rating.user_name}</div>
                         <div className="flex text-accent">
                           {Array(5).fill(0).map((_, i) => (
-                            <Star key={i} className={`w-4 h-4 ${i < rating.rating ? "fill-accent" : "text-muted"}`} />
+                            <Star key={i} className={`w-4 h-4 ${i < rating.rating ? "fill-accent text-accent" : "text-muted"}`} />
                           ))}
                         </div>
                       </div>
@@ -242,7 +232,7 @@ export default function PlaceDetail() {
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">Rating (1-5)</label>
+                    <label className="text-sm font-medium mb-1.5 block">Rating</label>
                     <div className="flex justify-between bg-muted/50 p-2 rounded-lg border">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button

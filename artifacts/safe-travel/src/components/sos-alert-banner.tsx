@@ -1,15 +1,14 @@
 import { useSocket } from "@/context/socket-context";
-import { AlertTriangle, X, ExternalLink, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { AlertTriangle, X, MapPin, Navigation } from "lucide-react";
+import { useEffect } from "react";
+import { useLocation } from "wouter";
 
 export function SosAlertBanner() {
-  const { latestSos, clearSos, username } = useSocket();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const { latestSos, clearSos } = useSocket();
+  const [, navigate] = useLocation();
 
   useEffect(() => {
     if (latestSos) {
-      // Play alert beep via Web Audio API
       try {
         const ctx = new AudioContext();
         const osc = ctx.createOscillator();
@@ -27,8 +26,12 @@ export function SosAlertBanner() {
 
   if (!latestSos) return null;
 
-  const mapsUrl = `https://www.google.com/maps?q=${latestSos.lat},${latestSos.lng}`;
   const timeStr = new Date(latestSos.triggeredAt).toLocaleTimeString();
+
+  function goToSafetyMap() {
+    clearSos();
+    navigate("/map?safety=1");
+  }
 
   return (
     <div
@@ -40,7 +43,7 @@ export function SosAlertBanner() {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-white font-bold text-base md:text-lg leading-tight">
-          SOS Alert — Someone needs help!
+          SOS Alert — Someone needs help nearby!
         </p>
         <div className="flex flex-wrap items-center gap-3 mt-1.5">
           <span className="flex items-center gap-1 text-red-100 text-sm">
@@ -54,15 +57,13 @@ export function SosAlertBanner() {
         </div>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
-        <a
-          href={mapsUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={goToSafetyMap}
           className="inline-flex items-center gap-1.5 bg-white text-red-700 font-semibold text-sm px-4 py-2 rounded-full hover:bg-red-50 transition-colors"
         >
-          <ExternalLink className="w-3.5 h-3.5" />
-          Open Map
-        </a>
+          <Navigation className="w-3.5 h-3.5" />
+          Find Safety
+        </button>
         <button
           onClick={clearSos}
           className="text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors"

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ShieldAlert, Plus, Trash2, Phone, User, Info, MapPin } from "lucide-react";
+import { ShieldAlert, Plus, Trash2, Phone, User, Info, MapPin, Navigation } from "lucide-react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function SosCenter() {
   const { location } = useGeolocation();
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   
   const currentLoc = location || DEFAULT_LOCATION;
@@ -69,6 +71,13 @@ export default function SosCenter() {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Manage your emergency contacts and find nearby safe havens. In an emergency, use the SOS button at the top right of any page.
         </p>
+        <button
+          onClick={() => navigate("/map?safety=1")}
+          className="mt-5 inline-flex items-center gap-2 bg-destructive text-destructive-foreground font-bold px-6 py-3 rounded-full shadow-lg hover:bg-destructive/90 transition-colors animate-pulse"
+        >
+          <Navigation className="w-5 h-5" />
+          Find Nearest Hospital &amp; Police on Map
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -191,8 +200,8 @@ export default function SosCenter() {
                           <span className="text-xs font-medium bg-muted px-2 py-1 rounded">
                             {spot.distance_km?.toFixed(1)} km away
                           </span>
-                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => window.open(`https://maps.google.com/maps?q=${spot.lat},${spot.lng}`, '_blank')}>
-                            Directions
+                          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => navigate("/map?safety=1")}>
+                            <Navigation className="w-3 h-3 mr-1" /> Navigate
                           </Button>
                         </div>
                       </div>

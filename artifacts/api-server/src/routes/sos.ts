@@ -6,6 +6,7 @@ import {
   CreateSosContactBody,
   DeleteSosContactParams,
 } from "@workspace/api-zod";
+import { getSocketServer } from "../lib/socket-server";
 
 const router = Router();
 
@@ -16,14 +17,23 @@ router.post("/alert", async (req, res) => {
     return;
   }
 
-  // Count active contacts to report how many were "notified"
   const contacts = await db.select().from(sosContactsTable);
-  const contactsCount = contacts.length;
 
   const [alert] = await db
     .insert(sosAlertsTable)
-    .values({ ...parsed.data, contacts_notified: contactsCount })
+    .values({ ...parsed.data, contacts_notified: contacts.length })
     .returning();
+
+  // Broadcast to all connected socket.io clients
+  const io = getSocketServer();
+  if (io) {
+    io.emit("sos-alert", {
+      lat: parsed.data.lat,
+      lng: parsed.data.lng,
+      message: parsed.data.message,
+      triggeredAt: new Date().toISOString(),
+    });
+  }
 
   res.status(201).json(alert);
 });

@@ -9,12 +9,20 @@ export interface SosAlertPayload {
   triggeredAt: string;
 }
 
+export interface LiveLocationPayload {
+  lat: number;
+  lng: number;
+  username: string;
+  timestamp: string;
+}
+
 interface SocketContextValue {
   username: string;
   setUsername: (name: string) => void;
   connected: boolean;
   latestSos: SosAlertPayload | null;
   clearSos: () => void;
+  liveLocation: LiveLocationPayload | null;
 }
 
 const SocketContext = createContext<SocketContextValue>({
@@ -23,14 +31,16 @@ const SocketContext = createContext<SocketContextValue>({
   connected: false,
   latestSos: null,
   clearSos: () => {},
+  liveLocation: null,
 });
 
 export function SocketProvider({ children }: { children: ReactNode }) {
   const [username, setUsernameState] = useState<string>(
     () => localStorage.getItem("st_username") ?? ""
   );
-  const [connected, setConnected] = useState(false);
-  const [latestSos, setLatestSos] = useState<SosAlertPayload | null>(null);
+  const [connected, setConnected]       = useState(false);
+  const [latestSos, setLatestSos]       = useState<SosAlertPayload | null>(null);
+  const [liveLocation, setLiveLocation] = useState<LiveLocationPayload | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -49,10 +59,20 @@ export function SocketProvider({ children }: { children: ReactNode }) {
       setLatestSos(data);
     });
 
+    socket.on("live-location", (data: LiveLocationPayload) => {
+      setLiveLocation(data);
+    });
+
+    socket.on("live-location-stop", () => {
+      setLiveLocation(null);
+    });
+
     return () => {
       socket.off("connect");
       socket.off("disconnect");
       socket.off("sos-alert");
+      socket.off("live-location");
+      socket.off("live-location-stop");
     };
   }, []);
 
@@ -63,7 +83,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SocketContext.Provider value={{ username, setUsername, connected, latestSos, clearSos: () => setLatestSos(null) }}>
+    <SocketContext.Provider value={{
+      username, setUsername, connected,
+      latestSos, clearSos: () => setLatestSos(null),
+      liveLocation,
+    }}>
       {children}
     </SocketContext.Provider>
   );

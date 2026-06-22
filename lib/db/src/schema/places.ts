@@ -16,6 +16,9 @@ export const placesTable = pgTable("places", {
   photo_url: text("photo_url"),
   description: text("description"),
   phone: text("phone"),
+  mood: text("mood").notNull().default("cultural"),
+  budget_level: text("budget_level").notNull().default("medium"),
+  travel_type: text("travel_type").notNull().default("solo"),
   created_at: timestamp("created_at").defaultNow().notNull(),
 });
 

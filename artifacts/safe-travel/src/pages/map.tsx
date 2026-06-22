@@ -7,11 +7,13 @@ import { useSearch } from "wouter";
 import {
   Navigation, Locate, Layers, X, Star, Phone, MapPin, Clock, Ruler,
   ChevronRight, RotateCcw, Play, Square, AlertTriangle, ShieldAlert, Activity,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useListPlaces } from "@workspace/api-client-react";
 import type { Place } from "@workspace/api-client-react";
+import { useSocket } from "@/context/socket-context";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -163,16 +165,32 @@ interface SafetyRoute {
 
 // ─── component ────────────────────────────────────────────────────────────────
 
+// ─── live-location icon ────────────────────────────────────────────────────────
+
+const liveLocIcon = L.divIcon({
+  html: `<div style="
+    width:22px;height:22px;background:#ef4444;border:3px solid white;
+    border-radius:50%;box-shadow:0 0 0 8px rgba(239,68,68,0.25),0 2px 8px rgba(0,0,0,0.4);
+    animation:live-ping 1.5s ease-out infinite;
+  "></div>`,
+  className: "",
+  iconSize: [22, 22],
+  iconAnchor: [11, 11],
+});
+
 export default function MapExplorer() {
   const { data: places = [] } = useListPlaces({});
+  const { liveLocation }      = useSocket();
 
   // URL params
   const search       = useSearch();
-  const isSafetyMode = new URLSearchParams(search).get("safety") === "1";
+  const params       = new URLSearchParams(search);
+  const isSafetyMode = params.get("safety") === "1";
+  const zoomParam    = params.get("zoom"); // "lat,lng" from /suggest "View on Map"
 
   // Map state
   const [tileStyle, setTileStyle] = useState<"standard" | "satellite">("standard");
-  const [filterType, setFilterType] = useState<string>(isSafetyMode ? "all" : "all");
+  const [filterType, setFilterType] = useState<string>("all");
   const [userLoc, setUserLoc]     = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating]   = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
@@ -214,6 +232,22 @@ export default function MapExplorer() {
     } catch {}
     setLocating(false);
   }, [geoLocate]);
+
+  // ── zoom to place from /suggest ────────────────────────────────────────────
+  useEffect(() => {
+    if (!zoomParam) return;
+    const [latStr, lngStr] = zoomParam.split(",");
+    const lat = parseFloat(latStr);
+    const lng = parseFloat(lngStr);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      setPanTo({ center: [lat, lng], zoom: 16 });
+      // find and select matching place
+      const match = places.find(
+        p => Math.abs(p.lat - lat) < 0.001 && Math.abs(p.lng - lng) < 0.001
+      );
+      if (match) setSelectedPlace(match);
+    }
+  }, [zoomParam, places]);
 
   // ── safety mode auto-run ───────────────────────────────────────────────────
 
@@ -348,6 +382,21 @@ export default function MapExplorer() {
           {userLoc && (
             <Marker position={[userLoc.lat, userLoc.lng]} icon={userIcon}>
               <Popup><strong>You are here</strong></Popup>
+            </Marker>
+          )}
+
+          {/* Live SOS location broadcast from another device */}
+          {liveLocation && (
+            <Marker position={[liveLocation.lat, liveLocation.lng]} icon={liveLocIcon}>
+              <Popup>
+                <div className="text-sm">
+                  <strong className="text-red-600">🚨 LIVE SOS</strong><br />
+                  <span className="font-medium">{liveLocation.username}</span><br />
+                  <span className="text-gray-500 text-xs">
+                    {new Date(liveLocation.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              </Popup>
             </Marker>
           )}
 

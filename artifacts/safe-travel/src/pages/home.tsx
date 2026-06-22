@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useGetDashboardStats, useGetTopRatedPlaces } from "@workspace/api-client-react";
 import { PlaceCard } from "@/components/place-card";
 import { useAuth } from "@/context/auth-context";
+import { YatraLogo } from "@/components/yatra-logo";
 
 export default function Home() {
   const [, setLocation] = useLocation();

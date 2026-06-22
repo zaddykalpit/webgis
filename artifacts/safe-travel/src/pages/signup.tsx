@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
-import { Eye, EyeOff, Shield, Mail, Lock, User, UserPlus, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, UserPlus, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
+import { YatraLogo } from "@/components/yatra-logo";
 
 function PasswordStrength({ password }: { password: string }) {
   const checks = [
@@ -62,10 +63,10 @@ export default function Signup() {
 
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 mb-4">
-              <Shield className="w-7 h-7 text-primary" />
+            <div className="text-primary mb-4">
+              <YatraLogo size={52} />
             </div>
-            <h1 className="text-2xl font-bold">Create your Yatra account</h1>
+            <h1 className="text-2xl font-bold">Create your account</h1>
             <p className="text-sm text-muted-foreground mt-1.5">Travel Nepal safely, together</p>
           </div>
 

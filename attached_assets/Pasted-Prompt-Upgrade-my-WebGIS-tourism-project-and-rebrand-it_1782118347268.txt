@@ -1,0 +1,151 @@
+Prompt:
+
+Upgrade my WebGIS tourism project and rebrand it as Yatra. Focus on functionality, performance, and meeting academic evaluation criteria.
+
+Branding
+Replace all references to "Safe Journey" with Yatra.
+Create and integrate a professional tourism/travel-themed Yatra logo.
+Use a clean modern UI suitable for tourism and navigation.
+Tourism Data
+Automatically fetch and display additional tourism-related places from Google Maps/OpenStreetMap APIs.
+Only include places with ratings 3.0 stars and above.
+Instead of large map markers, display the place name as small map labels/text to reduce map clutter.
+Show ratings and category information in popups.
+SOS System Enhancement
+Current SOS feature is not sufficient.
+When a user triggers SOS:
+Send the user's live coordinates to the backend.
+Any nearby logged-in Yatra user should immediately receive an in-app popup notification.
+Display the distressed user's location directly on the Yatra map.
+Do not redirect users to Google Maps.
+Include user name, location, timestamp, and emergency status.
+Use WebSockets (Socket.IO) or similar real-time communication.
+Navigation System
+Implement Google Maps–style navigation.
+Add:
+Start Journey button
+Stop Journey button
+Live route tracking
+Real-time distance remaining
+Estimated arrival time
+Route recalculation when user location changes
+Distance should continuously decrease as the user moves.
+Tourism Features
+
+Add more tourism-related layers:
+
+Tourist Attractions
+Hotels
+Restaurants
+Heritage Sites
+Religious Sites
+Trekking Routes
+Viewpoints
+Travel Guides
+
+Add a guide section containing:
+
+Place description
+Best visiting season
+Opening hours (if available)
+Entry fee (if available)
+Nearby attractions
+Travel tips
+Academic Requirements (Must Fully Satisfy)
+1. Three-Tier Architecture
+
+Implement a proper three-tier architecture:
+
+Frontend Layer
+HTML
+CSS
+JavaScript
+Leaflet
+Backend Layer
+Node.js + Express
+REST APIs
+SOS handling
+Routing logic
+User authentication
+Real-time notifications via Socket.IO
+Data Layer
+GeoJSON datasets
+PostgreSQL/PostGIS (preferred)
+Store:
+Users
+Tourism places
+SOS records
+Routes
+Administrative boundaries
+
+Clearly separate frontend, backend, and database folders.
+
+2. Base Maps (Minimum 3)
+
+Provide map switcher with:
+
+OpenStreetMap
+Satellite Map
+Terrain/Topographic Map
+3. Overlay Layers (Minimum 3)
+
+Provide toggleable overlays:
+
+Province Boundary
+District Boundary
+Local Level Boundary
+
+Additional overlays:
+
+Tourist Places
+Hotels
+Restaurants
+Heritage Sites
+Religious Sites
+Trekking Routes
+Viewpoints
+4. Spatial Functions (Minimum 3)
+
+Using Turf.js:
+
+Buffer Analysis
+Distance Measurement
+Nearest Place Finder
+Route Length Calculation
+Point-in-Polygon Analysis
+
+Show results visually on the map.
+
+5. Attribute Functions (Minimum 3)
+
+Implement:
+
+Search by Place Name
+Category Filter
+Province/District Filter
+Popup Information Display
+Category-wise Data Listing
+Attribute Table
+
+Each popup should display:
+
+Name
+Category
+Rating
+Description
+Coordinates
+Contact Information (if available)
+Deliverable Goal
+
+Transform the project into a professional tourism WebGIS application called Yatra that clearly demonstrates:
+
+Three-tier architecture
+Multiple basemaps
+Multiple overlay layers
+Spatial analysis tools
+Attribute query tools
+Real-time SOS system
+Live navigation
+Tourism information management
+
+Prioritize working functionality over visual effects and ensure all academic marking criteria are visibly implemented.

@@ -19,10 +19,6 @@ export function UsernamePrompt() {
     setVisible(false);
   }
 
-  function handleSkip() {
-    setVisible(false);
-  }
-
   return (
     <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}>
       <div className="bg-background rounded-2xl shadow-2xl p-8 max-w-sm w-full border">
@@ -31,7 +27,7 @@ export function UsernamePrompt() {
             <Shield className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h2 className="font-bold text-xl">Welcome to SafeTravel</h2>
+            <h2 className="font-bold text-xl">Welcome to Yatra</h2>
             <p className="text-sm text-muted-foreground">Set a name to receive SOS alerts</p>
           </div>
         </div>
@@ -43,7 +39,7 @@ export function UsernamePrompt() {
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 autoFocus
-                placeholder="e.g. Priya, Ravi, Sarah..."
+                placeholder="e.g. Priya, Ravi, Sarah…"
                 className="pl-9"
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -56,9 +52,9 @@ export function UsernamePrompt() {
           </div>
           <div className="flex gap-3">
             <Button type="submit" className="flex-1" disabled={!input.trim()}>
-              Save & Connect
+              Save &amp; Connect
             </Button>
-            <Button type="button" variant="ghost" onClick={handleSkip}>
+            <Button type="button" variant="ghost" onClick={() => setVisible(false)}>
               Skip
             </Button>
           </div>
